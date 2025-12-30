@@ -58,18 +58,29 @@ const BlogCard = memo(function BlogCard({ post }: BlogCardProps) {
           dangerouslySetInnerHTML={{ __html: excerptHtml }}
         />
 
-        {post.categories && post.categories.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {post.categories.map((catId) => (
-              <span
-                key={catId}
-                className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
-              >
-                {categoryNames[catId] ?? 'Category'}
-              </span>
-            ))}
-          </div>
-        )}
+        {post.categories && post.categories.length > 0 && (() => {
+          // Normalize categories to numeric IDs when the array may contain objects
+          const categoryIds: number[] = post.categories
+            .map((c) => {
+              if (typeof c === 'number') return c;
+              if (c && typeof c === 'object' && 'id' in c) return (c as { id: number }).id;
+              return undefined;
+            })
+            .filter((n): n is number => typeof n === 'number');
+
+          return (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {categoryIds.map((id) => (
+                <span
+                  key={id}
+                  className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                >
+                  {categoryNames[id] ?? 'Category'}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
 
         <div className="mt-auto pt-3 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
           <time dateTime={post.date}>
